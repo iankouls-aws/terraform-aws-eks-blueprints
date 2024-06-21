@@ -115,7 +115,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#eks-cluster-w-nvidia-gpus-and-efa-for-machine-learning" class="md-skip">
+        <a href="#eks-cluster-w-nvidia-gpus-and-efa-for-aiml-workloads" class="md-skip">
           Skip to content
         </a>
       
@@ -1323,8 +1323,8 @@
 
 
 <!-- BEGIN INCLUDE ../../patterns/nvidia-gpu-efa/README.md -->
-<h1 id="eks-cluster-w-nvidia-gpus-and-efa-for-machine-learning">EKS Cluster w/ NVIDIA GPUs and EFA for Machine Learning<a class="headerlink" href="#eks-cluster-w-nvidia-gpus-and-efa-for-machine-learning" title="Permanent link">&para;</a></h1>
-<p>This pattern demonstrates an Amazon EKS Cluster with an EFA-enabled nodegroup that utilizes <code>p5.48xlarge</code> instances with H100 NVIDIA GPUs used in distributed, multi-node machine learning workloads.</p>
+<h1 id="eks-cluster-w-nvidia-gpus-and-efa-for-aiml-workloads">EKS Cluster w/ NVIDIA GPUs and EFA for AI/ML Workloads<a class="headerlink" href="#eks-cluster-w-nvidia-gpus-and-efa-for-aiml-workloads" title="Permanent link">&para;</a></h1>
+<p>This pattern demonstrates an Amazon EKS Cluster with an EFA-enabled nodegroup that utilizes <code>p5.48xlarge</code> instances with H100 NVIDIA GPUs used in distributed, multi-node AI/ML workloads.</p>
 <p>The following components are demonstrated in this pattern:</p>
 <ul>
 <li>A "default" node group that supports addons and components that do not require GPUs nor EFA devices. Any pods that do not tolerate the taints of the GPU node group will be scheduled on instances within this node group.</li>
@@ -1376,49 +1376,58 @@
 </span></span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="hll"><span class="w">      </span><span class="na">ami_type</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;AL2_x86_64_GPU&quot;</span>
 </span></span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="hll"><span class="w">      </span><span class="na">instance_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;p5.48xlarge&quot;</span><span class="p">]</span>
 </span></span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="hll">
-</span></span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="hll"><span class="w">      </span><span class="na">pre_bootstrap_user_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;&lt;-</span><span class="dl">EOT</span>
-</span></span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="hll"><span class="sh">        # Mount instance store volumes in RAID-0 for kubelet and containerd</span>
-</span></span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="hll"><span class="sh">        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0</span>
-</span></span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="hll"><span class="sh">        /bin/setup-local-disks raid0</span>
-</span></span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="hll"><span class="dl">      EOT</span>
-</span></span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="hll">
-</span></span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="hll"><span class="w">      </span><span class="na">min_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
-</span></span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="hll"><span class="w">      </span><span class="na">max_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
-</span></span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="hll"><span class="w">      </span><span class="na">desired_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
-</span></span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="hll">
-</span></span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="hll"><span class="c1">      # This will:</span>
-</span></span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="hll"><span class="c1">      # 1. Create a placement group to place the instances close to one another</span>
-</span></span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a><span class="hll"><span class="c1">      # 2. Ignore subnets that reside in AZs that do not support the instance type</span>
-</span></span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="hll"><span class="c1">      # 3. Expose all of the available EFA interfaces on the launch template</span>
-</span></span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="hll"><span class="w">      </span><span class="na">enable_efa_support</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
-</span></span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a><span class="hll">
-</span></span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="hll"><span class="w">      </span><span class="nb">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-</span></span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="hll"><span class="w">        </span><span class="s2">&quot;vpc.amazonaws.com/efa.present&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span>
-</span></span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="hll"><span class="w">        </span><span class="s2">&quot;nvidia.com/gpu.present&quot;</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span>
-</span></span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="hll"><span class="w">      </span><span class="p">}</span>
-</span></span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="hll">
-</span></span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="hll"><span class="w">      </span><span class="nb">taints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-</span></span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a><span class="hll"><span class="c1">        # Ensure only GPU workloads are scheduled on this node group</span>
-</span></span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="hll"><span class="w">        </span><span class="nb">gpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-</span></span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a><span class="hll"><span class="w">          </span><span class="na">key</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;nvidia.com/gpu&quot;</span>
-</span></span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a><span class="hll"><span class="w">          </span><span class="na">value</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span>
-</span></span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="hll"><span class="w">          </span><span class="na">effect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;NO_SCHEDULE&quot;</span>
-</span></span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a><span class="hll"><span class="w">        </span><span class="p">}</span>
+</span></span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="hll">
+</span></span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="hll"><span class="c1">      # Uncomment this block and specify capacity_reservation_id</span>
+</span></span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="hll"><span class="c1">      # to use an on-demand capacity reservation (ODCR) for your EFA instances</span>
+</span></span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="hll"><span class="c1">      #capacity_reservation_specification = {</span>
+</span></span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="hll"><span class="c1">      #  capacity_reservation_target = {</span>
+</span></span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="hll"><span class="c1">      #    capacity_reservation_id = &quot;cr-xxxxxxxxxxxxxxxxx&quot;</span>
+</span></span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="hll"><span class="c1">      #  }</span>
+</span></span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="hll"><span class="c1">      #}</span>
+</span></span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="hll">
+</span></span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="hll"><span class="w">      </span><span class="na">pre_bootstrap_user_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;&lt;-</span><span class="dl">EOT</span>
+</span></span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="hll"><span class="sh">        # Mount instance store volumes in RAID-0 for kubelet and containerd</span>
+</span></span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="hll"><span class="sh">        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0</span>
+</span></span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a><span class="hll"><span class="sh">        /bin/setup-local-disks raid0</span>
+</span></span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="hll"><span class="dl">      EOT</span>
+</span></span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="hll">
+</span></span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a><span class="hll"><span class="w">      </span><span class="na">min_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span></span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="hll"><span class="w">      </span><span class="na">max_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span></span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="hll"><span class="w">      </span><span class="na">desired_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span></span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="hll">
+</span></span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="hll"><span class="c1">      # This will:</span>
+</span></span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="hll"><span class="c1">      # 1. Create a placement group to place the instances close to one another</span>
+</span></span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="hll"><span class="c1">      # 2. Ignore subnets that reside in AZs that do not support the instance type</span>
+</span></span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a><span class="hll"><span class="c1">      # 3. Expose all of the available EFA interfaces on the launch template</span>
+</span></span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="hll"><span class="w">      </span><span class="na">enable_efa_support</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">true</span>
+</span></span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a><span class="hll">
+</span></span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a><span class="hll"><span class="w">      </span><span class="nb">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span></span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="hll"><span class="w">        </span><span class="s2">&quot;vpc.amazonaws.com/efa.present&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span>
+</span></span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a><span class="hll"><span class="w">        </span><span class="s2">&quot;nvidia.com/gpu.present&quot;</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span>
 </span></span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="hll"><span class="w">      </span><span class="p">}</span>
-</span></span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="hll"><span class="w">    </span><span class="p">}</span>
-</span></span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>
-</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a><span class="c1">    # This node group is for core addons such as CoreDNS</span>
-</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a><span class="w">    </span><span class="nb">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a><span class="w">      </span><span class="na">instance_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;m5.large&quot;</span><span class="p">]</span>
-</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>
-</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a><span class="w">      </span><span class="na">min_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
-</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a><span class="w">      </span><span class="na">max_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
-</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a><span class="w">      </span><span class="na">desired_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span></span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="hll">
+</span></span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a><span class="w">      </span><span class="nb">taints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a><span class="c1">        # Ensure only GPU workloads are scheduled on this node group</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a><span class="w">        </span><span class="nb">gpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a><span class="w">          </span><span class="na">key</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;nvidia.com/gpu&quot;</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a><span class="w">          </span><span class="na">value</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a><span class="w">          </span><span class="na">effect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;NO_SCHEDULE&quot;</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a><span class="w">      </span><span class="p">}</span>
 </span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>
-</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a><span class="w">  </span><span class="na">tags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">local.tags</span>
-</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a><span class="p">}</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a><span class="c1">    # This node group is for core addons such as CoreDNS</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a><span class="w">    </span><span class="nb">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a><span class="w">      </span><span class="na">instance_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;m5.large&quot;</span><span class="p">]</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a><span class="w">      </span><span class="na">min_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a><span class="w">      </span><span class="na">max_size</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a><span class="w">      </span><span class="na">desired_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a><span class="w">  </span><span class="na">tags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">local.tags</span>
+</span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-terraform highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">################################################################################</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Helm charts</span>
@@ -1471,27 +1480,32 @@
 <h2 id="deploy">Deploy<a class="headerlink" href="#deploy" title="Permanent link">&para;</a></h2>
 <p>See <a href="https://aws-ia.github.io/terraform-aws-eks-blueprints/getting-started/#prerequisites">here</a> for the prerequisites and steps to deploy this pattern.</p>
 <h2 id="validate">Validate<a class="headerlink" href="#validate" title="Permanent link">&para;</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The following steps are shown with <code>g5.8xlarge</code> for frugality. Values shown below will change based on the instance type selected (i.e. - <code>p5.48xlarge</code> has 8 GPUs and 32 EFA interfaces)</p>
-</div>
+<p>Note:</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">Desired</span><span class="w"> </span><span class="nx">instance</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nx">can</span><span class="w"> </span><span class="nx">be</span><span class="w"> </span><span class="nx">specified</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="p">[</span><span class="nx">eks</span><span class="p">.</span><span class="nx">tf</span><span class="p">](..</span><span class="o">/</span><span class="p">..</span><span class="o">/</span><span class="nx">patterns</span><span class="o">/</span><span class="nx">nvidia</span><span class="o">-</span><span class="nx">gpu</span><span class="o">-</span><span class="nx">efa</span><span class="o">/</span><span class="nx">eks</span><span class="p">.</span><span class="nx">tf</span><span class="err">#</span><span class="nx">L36</span><span class="p">).</span><span class="w"> </span>
+<span class="nx">Values</span><span class="w"> </span><span class="nx">shown</span><span class="w"> </span><span class="nx">below</span><span class="w"> </span><span class="nx">will</span><span class="w"> </span><span class="nx">change</span><span class="w"> </span><span class="nx">based</span><span class="w"> </span><span class="nx">on</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">instance</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nx">selected</span><span class="w"> </span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">e</span><span class="p">.</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="err">`</span><span class="nx">p5</span><span class="m m-Double">.48</span><span class="nx">xlarge</span><span class="err">`</span><span class="w"> </span><span class="nx">has</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="nx">GPUs</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="mi">32</span><span class="w"> </span><span class="nx">EFA</span><span class="w"> </span><span class="nx">interfaces</span><span class="p">).</span>
+<span class="nx">A</span><span class="w"> </span><span class="nx">list</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">EFA</span><span class="o">-</span><span class="nx">enabled</span><span class="w"> </span><span class="nx">instance</span><span class="w"> </span><span class="nx">types</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="nx">available</span><span class="w"> </span><span class="p">[</span><span class="nx">here</span><span class="p">](</span><span class="nx">https</span><span class="p">:</span><span class="c1">//docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types).</span>
+<span class="nx">If</span><span class="w"> </span><span class="nx">you</span><span class="w"> </span><span class="nx">are</span><span class="w"> </span><span class="nx">using</span><span class="w"> </span><span class="nx">an</span><span class="w"> </span><span class="nx">on</span><span class="o">-</span><span class="nx">demand</span><span class="w"> </span><span class="nx">capacity</span><span class="w"> </span><span class="nx">reservation</span><span class="w"> </span><span class="p">(</span><span class="nx">ODCR</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">your</span><span class="w"> </span><span class="nx">instance</span><span class="w"> </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="nx">please</span><span class="w"> </span><span class="nx">uncomment</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="err">`</span><span class="nx">capacity_reservation_specification</span><span class="err">`</span><span class="w"> </span><span class="nx">block</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="err">`</span><span class="nx">eks</span><span class="p">.</span><span class="nx">tf</span><span class="err">`</span>
+<span class="k">and</span><span class="w"> </span><span class="nx">specify</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">capacity_reservation_id</span><span class="p">.</span><span class="w"> </span><span class="nx">Please</span><span class="w"> </span><span class="nx">ensure</span><span class="w"> </span><span class="nx">that</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">region</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">availability</span><span class="w"> </span><span class="nx">zone</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">your</span><span class="w"> </span><span class="nx">ODCR</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">ones</span><span class="w"> </span><span class="nx">used</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="err">`</span><span class="nx">main</span><span class="p">.</span><span class="nx">tf</span><span class="err">`</span><span class="p">.</span>
+</code></pre></div>
+
 <ol>
 <li>
-<p>List the nodes by instance type:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>instance-type<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>node<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span>f:
+<p>List the nodes with instance type details:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-L<span class="w"> </span>node.kubernetes.io/instance-type
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>node.kubernetes.io/instance-type: g5.8xlarge
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>node.kubernetes.io/instance-type: m5.large
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>node.kubernetes.io/instance-type: m5.large
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>node.kubernetes.io/instance-type: g5.8xlarge
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>NAME                                        STATUS   ROLES    AGE   VERSION               INSTANCE-TYPE
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>ip-10-0-1-16.us-east-2.compute.internal     Ready    &lt;none&gt;   12h   v1.29.3-eks-ae9a62a   p5.48xlarge
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>ip-10-0-12-113.us-east-2.compute.internal   Ready    &lt;none&gt;   14h   v1.29.3-eks-ae9a62a   m5.large
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>ip-10-0-12-201.us-east-2.compute.internal   Ready    &lt;none&gt;   12h   v1.29.3-eks-ae9a62a   p5.48xlarge
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>ip-10-0-46-217.us-east-2.compute.internal   Ready    &lt;none&gt;   14h   v1.29.3-eks-ae9a62a   m5.large
 </span></code></pre></div>
-<p>You should see two EFA-enabled (in this example <code>g5.8xlarge</code>) nodes in the list.</p>
+<p>You should see two EFA-enabled (in this example <code>p5.48xlarge</code>) nodes in the list.</p>
 </li>
 <li>
 <p>Deploy Kubeflow MPI Operator</p>
 <p>Kubeflow MPI Operator is required for running MPIJobs on EKS. We will use an MPIJob to test EFA.
 To deploy the MPI operator execute the following:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.3.0/deploy/v2beta1/mpi-operator.yaml
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.4.0/deploy/v2beta1/mpi-operator.yaml
 </span></code></pre></div>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>namespace/mpi-operator created
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>customresourcedefinition.apiextensions.k8s.io/mpijobs.kubeflow.org created
@@ -1511,66 +1525,139 @@ to allow the mpi-operator service account access to <code>leases</code> resource
 </span></code></pre></div>
 </li>
 <li>
-<p>EFA test</p>
-<p>The results should shown that two EFA adapters are available (one for each worker pod)</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/aws-samples/aws-do-eks/main/Container-Root/eks/deployment/efa-device-plugin/test-efa.yaml
+<p>EFA info test</p>
+<p>This test prints a list of available EFA interfaces by using the <code>/opt/amazon/efa/bin/fi_info</code> utility.
+Edit the script <a href="../../patterns/nvidia-gpu-efa/generate-efa-info-test.sh">generate-efa-info-test.sh</a> and adjust the following environment variables if needed prior to running it:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NUM_WORKERS</span><span class="o">=</span><span class="m">2</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GPU_PER_WORKER</span><span class="o">=</span><span class="m">8</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EFA_PER_WORKER</span><span class="o">=</span><span class="m">32</span>
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>mpijob.kubeflow.org/efa-info-test created
+<p><code>NUM_WORKERS</code> - number of nodes you want to run the test on
+<code>GPU_PER_WORKER</code> - number of GPUs available on each node
+<code>EFA_PER_WORKER</code> - number of EFA interfaces available on each node</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>./generate-efa-info-test.sh
 </span></code></pre></div>
-<p>Once the test launcher pod enters status <code>Running</code> or <code>Completed</code>, see the test logs using the command below:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>launcher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span>-f<span class="w"> </span><span class="m">1</span><span class="k">)</span>
+<p>This script generates an MPIJob manifest file named <code>efa-info-test.yaml</code>.</p>
+<p>To start the test apply the generated manifest to the cluster:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./efa-info-test.yaml
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Warning: Permanently added &#39;efa-info-test-worker-1.efa-info-test-worker.default.svc,10.11.13.224&#39; (ECDSA) to the list of known hosts.
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Warning: Permanently added &#39;efa-info-test-worker-0.efa-info-test-worker.default.svc,10.11.4.63&#39; (ECDSA) to the list of known hosts.
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>[1,1]&lt;stdout&gt;:provider: efa
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>[1,1]&lt;stdout&gt;:    fabric: efa
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>[1,1]&lt;stdout&gt;:    domain: rdmap197s0-rdm
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>[1,1]&lt;stdout&gt;:    version: 116.10
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>[1,1]&lt;stdout&gt;:    type: FI_EP_RDM
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>[1,1]&lt;stdout&gt;:    protocol: FI_PROTO_EFA
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>[1,0]&lt;stdout&gt;:provider: efa
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>[1,0]&lt;stdout&gt;:    fabric: efa
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>[1,0]&lt;stdout&gt;:    domain: rdmap197s0-rdm
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>[1,0]&lt;stdout&gt;:    version: 116.10
-</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>[1,0]&lt;stdout&gt;:    type: FI_EP_RDM
-</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>[1,0]&lt;stdout&gt;:    protocol: FI_PROTO_EFA
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>mpijob.kubeflow.org/efa-info-test created
+</span></code></pre></div>
+<p>Observe the pods in the current namespace. You should see a launcher pod and worker pods.
+It is normal for the launcher pod to restart a few times until the worker pods are fully running.</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>watch<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>pods
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>NAME                           READY   STATUS             RESTARTS      AGE
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>efa-info-test-launcher-wm8pm   0/1     CrashLoopBackOff   1 (16s ago)   19s
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>efa-info-test-worker-0         1/1     Running            0             19s
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>efa-info-test-worker-1         1/1     Running            0             19s
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>NAME                           READY   STATUS    RESTARTS      AGE
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>efa-info-test-launcher-wm8pm   1/1     Running   2 (18s ago)   21s
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>efa-info-test-worker-0         1/1     Running   0             21s
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>efa-info-test-worker-1         1/1     Running   0             21s
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>NAME                           READY   STATUS      RESTARTS   AGE
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>efa-info-test-launcher-wm8pm   0/1     Completed   2          5m20s
+</span></code></pre></div>
+<p>Once the test launcher pod enters status <code>Running</code> or <code>Completed</code>, 
+see the test logs using the command below:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>launcher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span>-f<span class="w"> </span><span class="m">1</span><span class="k">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>Warning: Permanently added &#39;efa-info-test-worker-1.efa-info-test.default.svc&#39; (ED25519) to the list of known hosts.
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Warning: Permanently added &#39;efa-info-test-worker-0.efa-info-test.default.svc&#39; (ED25519) to the list of known hosts.
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>[1,1]&lt;stdout&gt;:provider: efa
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>[1,1]&lt;stdout&gt;:    fabric: efa
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>[1,1]&lt;stdout&gt;:    domain: rdmap79s0-rdm
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>[1,1]&lt;stdout&gt;:    version: 120.10
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>[1,1]&lt;stdout&gt;:    type: FI_EP_RDM
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>[1,1]&lt;stdout&gt;:    protocol: FI_PROTO_EFA
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>...
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>[1,0]&lt;stdout&gt;:provider: efa
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>[1,0]&lt;stdout&gt;:    fabric: efa
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>[1,0]&lt;stdout&gt;:    domain: rdmap201s0-rdm
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>[1,0]&lt;stdout&gt;:    version: 120.10
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>[1,0]&lt;stdout&gt;:    type: FI_EP_RDM
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>[1,0]&lt;stdout&gt;:    protocol: FI_PROTO_EFA
+</span></code></pre></div>
+<p>Finally, remove the job:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>./efa-info-test.yaml
 </span></code></pre></div>
 </li>
 <li>
 <p>EFA NCCL test</p>
-<p>To run the EFA NCCL test please execute the following kubectl command:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/aws-samples/aws-do-eks/main/Container-Root/eks/deployment/efa-device-plugin/test-nccl-efa.yaml
+<p>The EFA NCCL test is used to measure network bandwidth by running the <code>/opt/nccl-tests/build/all_reduce_perf</code> utility. 
+Please edit the script below and modify the environment variables at the beginning of the script as needed. 
+Then generate the MPIjob manifest.</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>./generate-efa-nccl-test.sh
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>mpijob.kubeflow.org/test-nccl-efa created
+<p>This script creates a file named <code>efa-nccl-test.yaml</code>. Apply the manifest to start the EFA nccl test.</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./efa-nccl-test.yaml
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="sb">```</span>text
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>mpijob.kubeflow.org/efa-nccl-test<span class="w"> </span>created
 </span></code></pre></div>
-<p>Once the launcher pod enters <code>Running</code> or <code>Completed</code> state, execute the following to see the test logs:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>launcher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span>-f<span class="w"> </span><span class="m">1</span><span class="k">)</span>
+<p>Similarly to the EFA info test, a launcher and worker pods will be created. The launcher pod will be
+in CrashLoopBackoff mode until the worker pods enter Running state. 
+As soon as the launcher pod enters Running state as well, execute the following command to see the test logs:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>launcher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span>-f<span class="w"> </span><span class="m">1</span><span class="k">)</span>
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>[1,0]&lt;stdout&gt;:test-nccl-efa-worker-0:21:21 [0] NCCL INFO NET/OFI Selected Provider is efa (found 1 nics)
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>[1,0]&lt;stdout&gt;:test-nccl-efa-worker-0:21:21 [0] NCCL INFO Using network AWS Libfabric
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>[1,0]&lt;stdout&gt;:NCCL version 2.12.7+cuda11.4
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>...
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>[1,0]&lt;stdout&gt;:#                                                              out-of-place                       in-place          
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>[1,0]&lt;stdout&gt;:#       size         count      type   redop    root     time   algbw   busbw #wrong     time   algbw   busbw #wrong
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>[1,0]&lt;stdout&gt;:#        (B)    (elements)                               (us)  (GB/s)  (GB/s)            (us)  (GB/s)  (GB/s)       
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>[1,0]&lt;stdout&gt;:           0             0     float     sum      -1     0.13    0.00    0.00      0     0.12    0.00    0.00      0
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>[1,0]&lt;stdout&gt;:           0             0     float     sum      -1     0.12    0.00    0.00      0     0.12    0.00    0.00      0
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>[1,0]&lt;stdout&gt;:           4             1     float     sum      -1    65.43    0.00    0.00      0    65.82    0.00    0.00      0
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>[1,0]&lt;stdout&gt;:           8             2     float     sum      -1    64.86    0.00    0.00      0    65.67    0.00    0.00      0
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>[1,0]&lt;stdout&gt;:          16             4     float     sum      -1    64.72    0.00    0.00      0    64.83    0.00    0.00      0
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>[1,0]&lt;stdout&gt;:          32             8     float     sum      -1    65.47    0.00    0.00      0    65.16    0.00    0.00      0
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>[1,0]&lt;stdout&gt;:          64            16     float     sum      -1    65.34    0.00    0.00      0    65.58    0.00    0.00      0
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>[1,0]&lt;stdout&gt;:         128            32     float     sum      -1    65.99    0.00    0.00      0    66.28    0.00    0.00      0
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>[1,0]&lt;stdout&gt;:         256            64     float     sum      -1    75.81    0.00    0.01      0    66.76    0.00    0.01      0
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>[1,0]&lt;stdout&gt;:         512           128     float     sum      -1    69.43    0.01    0.01      0    67.18    0.01    0.01      0
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>[1,0]&lt;stdout&gt;:        1024           256     float     sum      -1    82.35    0.01    0.02      0    69.03    0.01    0.03      0
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>[1,0]&lt;stdout&gt;:        2048           512     float     sum      -1    72.49    0.03    0.05      0    71.37    0.03    0.05      0
+</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>[1,0]&lt;stdout&gt;:        4096          1024     float     sum      -1    77.47    0.05    0.10      0    77.42    0.05    0.10      0
+</span><span id="__span-22-18"><a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a>[1,0]&lt;stdout&gt;:        8192          2048     float     sum      -1    78.10    0.10    0.20      0    78.01    0.11    0.20      0
+</span><span id="__span-22-19"><a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>[1,0]&lt;stdout&gt;:       16384          4096     float     sum      -1    93.35    0.18    0.33      0    80.11    0.20    0.38      0
+</span><span id="__span-22-20"><a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>[1,0]&lt;stdout&gt;:       32768          8192     float     sum      -1    106.6    0.31    0.58      0    96.22    0.34    0.64      0
+</span><span id="__span-22-21"><a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a>[1,0]&lt;stdout&gt;:       65536         16384     float     sum      -1    120.6    0.54    1.02      0    89.06    0.74    1.38      0
+</span><span id="__span-22-22"><a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a>[1,0]&lt;stdout&gt;:      131072         32768     float     sum      -1    93.62    1.40    2.62      0    106.3    1.23    2.31      0
+</span><span id="__span-22-23"><a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a>[1,0]&lt;stdout&gt;:      262144         65536     float     sum      -1    111.5    2.35    4.41      0    111.6    2.35    4.41      0
+</span><span id="__span-22-24"><a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a>[1,0]&lt;stdout&gt;:      524288        131072     float     sum      -1    121.2    4.33    8.11      0    109.9    4.77    8.94      0
+</span><span id="__span-22-25"><a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a>[1,0]&lt;stdout&gt;:     1048576        262144     float     sum      -1    119.7    8.76   16.43      0    118.7    8.83   16.56      0
+</span><span id="__span-22-26"><a id="__codelineno-22-26" name="__codelineno-22-26" href="#__codelineno-22-26"></a>[1,0]&lt;stdout&gt;:     2097152        524288     float     sum      -1    143.9   14.58   27.33      0    144.2   14.55   27.28      0
+</span><span id="__span-22-27"><a id="__codelineno-22-27" name="__codelineno-22-27" href="#__codelineno-22-27"></a>[1,0]&lt;stdout&gt;:     4194304       1048576     float     sum      -1    163.7   25.62   48.03      0    163.6   25.64   48.08      0
+</span><span id="__span-22-28"><a id="__codelineno-22-28" name="__codelineno-22-28" href="#__codelineno-22-28"></a>[1,0]&lt;stdout&gt;:     8388608       2097152     float     sum      -1    195.3   42.95   80.54      0    194.9   43.03   80.69      0
+</span><span id="__span-22-29"><a id="__codelineno-22-29" name="__codelineno-22-29" href="#__codelineno-22-29"></a>[1,0]&lt;stdout&gt;:    16777216       4194304     float     sum      -1    278.6   60.22  112.91      0    279.9   59.94  112.38      0
+</span><span id="__span-22-30"><a id="__codelineno-22-30" name="__codelineno-22-30" href="#__codelineno-22-30"></a>[1,0]&lt;stdout&gt;:    33554432       8388608     float     sum      -1    459.7   73.00  136.87      0    433.9   77.34  145.01      0
+</span><span id="__span-22-31"><a id="__codelineno-22-31" name="__codelineno-22-31" href="#__codelineno-22-31"></a>[1,0]&lt;stdout&gt;:    67108864      16777216     float     sum      -1    587.2  114.29  214.29      0    587.1  114.31  214.34      0
+</span><span id="__span-22-32"><a id="__codelineno-22-32" name="__codelineno-22-32" href="#__codelineno-22-32"></a>[1,0]&lt;stdout&gt;:   134217728      33554432     float     sum      -1    926.6  144.85  271.60      0    851.5  157.63  295.55      0
+</span><span id="__span-22-33"><a id="__codelineno-22-33" name="__codelineno-22-33" href="#__codelineno-22-33"></a>[1,0]&lt;stdout&gt;:   268435456      67108864     float     sum      -1   1497.8  179.22  336.03      0   1496.0  179.44  336.45      0
+</span><span id="__span-22-34"><a id="__codelineno-22-34" name="__codelineno-22-34" href="#__codelineno-22-34"></a>[1,0]&lt;stdout&gt;:   536870912     134217728     float     sum      -1   2558.6  209.83  393.42      0   2560.8  209.65  393.10      0
+</span><span id="__span-22-35"><a id="__codelineno-22-35" name="__codelineno-22-35" href="#__codelineno-22-35"></a>[1,0]&lt;stdout&gt;:  1073741824     268435456     float     sum      -1   4553.6  235.80  442.13      0   4553.0  235.83  442.19      0
+</span><span id="__span-22-36"><a id="__codelineno-22-36" name="__codelineno-22-36" href="#__codelineno-22-36"></a>[1,0]&lt;stdout&gt;:  2147483648     536870912     float     sum      -1   9062.5  236.96  444.31      0   9060.4  237.02  444.41      0
+</span><span id="__span-22-37"><a id="__codelineno-22-37" name="__codelineno-22-37" href="#__codelineno-22-37"></a>[1,0]&lt;stdout&gt;:# Out of bounds values : 0 OK
+</span><span id="__span-22-38"><a id="__codelineno-22-38" name="__codelineno-22-38" href="#__codelineno-22-38"></a>[1,0]&lt;stdout&gt;:# Avg bus bandwidth    : 79.9352 
+</span><span id="__span-22-39"><a id="__codelineno-22-39" name="__codelineno-22-39" href="#__codelineno-22-39"></a>[1,0]&lt;stdout&gt;:#
 </span></code></pre></div>
-<p>Columns 8 and 12 in the output table show the in-place and out-of-place bus bandwidth calculated for the data size listed in column 1. In this case it is 3.13 and 3.12 GB/s respectively.
-Your actual results may be slightly different. The calculated average bus bandwidth is displayed at the bottom of the log when the test finishes after it reaches the max data size,
-specified in the mpijob manifest. In this result the average bus bandwidth is 1.15 GB/s.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>[1,0]&lt;stdout&gt;:#       size         count      type   redop    root     time   algbw   busbw #wrong     time   algbw   busbw #wrong
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>[1,0]&lt;stdout&gt;:#        (B)    (elements)                               (us)  (GB/s)  (GB/s)            (us)  (GB/s)  (GB/s)
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>...
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>[1,0]&lt;stdout&gt;:      262144         65536     float     sum      -1    195.0    1.34    1.34      0    194.0    1.35    1.35      0
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>[1,0]&lt;stdout&gt;:      524288        131072     float     sum      -1    296.9    1.77    1.77      0    291.1    1.80    1.80      0
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>[1,0]&lt;stdout&gt;:     1048576        262144     float     sum      -1    583.4    1.80    1.80      0    579.6    1.81    1.81      0
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>[1,0]&lt;stdout&gt;:     2097152        524288     float     sum      -1    983.3    2.13    2.13      0    973.9    2.15    2.15      0
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>[1,0]&lt;stdout&gt;:     4194304       1048576     float     sum      -1   1745.4    2.40    2.40      0   1673.2    2.51    2.51      0
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>...
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>[1,0]&lt;stdout&gt;:# Avg bus bandwidth    : 1.15327
+<p>Columns 9 and 13 in the output table show the in-place and out-of-place bus bandwidth calculated for the data size listed in column 2. 
+In this case it is at maximum 444.31 and 444.41 GB/s respectively.
+Your actual results may be slightly different. The calculated average bus bandwidth is displayed at the end of the log.
+In this test run the average bus bandwidth was 79.9352 GB/s.</p>
+<p>Lastly, delete the MPIJob:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>./efa-nccl-test.yaml
 </span></code></pre></div>
 </li>
 </ol>
 <h2 id="destroy">Destroy<a class="headerlink" href="#destroy" title="Permanent link">&para;</a></h2>
 <!-- BEGIN INCLUDE ../../docs/_partials/destroy.md -->
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>terraform<span class="w"> </span>destroy<span class="w"> </span>-target<span class="o">=</span><span class="s2">&quot;module.eks_blueprints_addons&quot;</span><span class="w"> </span>-auto-approve
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>terraform<span class="w"> </span>destroy<span class="w"> </span>-target<span class="o">=</span><span class="s2">&quot;module.eks&quot;</span><span class="w"> </span>-auto-approve
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>terraform<span class="w"> </span>destroy<span class="w"> </span>-auto-approve
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>terraform<span class="w"> </span>destroy<span class="w"> </span>-target<span class="o">=</span><span class="s2">&quot;module.eks_blueprints_addons&quot;</span><span class="w"> </span>-auto-approve
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>terraform<span class="w"> </span>destroy<span class="w"> </span>-target<span class="o">=</span><span class="s2">&quot;module.eks&quot;</span><span class="w"> </span>-auto-approve
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>terraform<span class="w"> </span>destroy<span class="w"> </span>-auto-approve
 </span></code></pre></div>
 <p>See <a href="https://aws-ia.github.io/terraform-aws-eks-blueprints/getting-started/#destroy">here</a> for more details on cleaning up the resources created.</p>
 <!-- END INCLUDE -->
